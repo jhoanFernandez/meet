@@ -3,77 +3,76 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Video Call with Screen Sharing</title>
+    <title>Video Call and Text Editor</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/feather-icons"></script>
     <script src="/socket.io/socket.io.js"></script>
 </head>
-<body class="bg-gray-100 flex items-center justify-center min-h-screen">
+<body class="bg-gray-100 flex items-center justify-center min-h-screen p-4">
 
     <!-- Contenedor principal -->
-    <div class="flex flex-col w-full max-w-4xl p-4 bg-white rounded-lg shadow-md space-y-4">
+    <div class="w-full max-w-4xl bg-white rounded-lg shadow-lg overflow-hidden">
 
-        <!-- Contenedor de la cámara y la pantalla compartida -->
-        <div class="flex w-full space-x-4">
-            <!-- Contenedor de la cámara (más pequeño) -->
-            <div id="cameraContainer" class="flex flex-col items-center w-1/4 bg-gray-300 rounded-lg p-2">
-                <h2 class="font-semibold text-lg mb-2">Mi Cámara</h2>
+        <!-- Barra superior con íconos -->
+        <div class="border-b border-gray-200 p-4 flex justify-between items-center">
+            <button class="text-gray-600 hover:text-gray-800">
+                <i data-feather="menu" class="w-6 h-6"></i>
+            </button>
+            <button class="text-gray-600 hover:text-gray-800">
+                <i data-feather="type" class="w-6 h-6"></i>
+            </button>
+            <button class="text-gray-600 hover:text-gray-800">
+                <i data-feather="refresh-cw" class="w-6 h-6"></i>
+            </button>
+        </div>
+
+        <!-- Contenedor de video llamada y pantalla compartida -->
+        <div class="p-4 flex flex-wrap space-x-4">
+            <!-- Mi cámara -->
+            <div class="w-full sm:w-1/4 bg-gray-300 rounded-lg p-2">
+                <h2 class="font-semibold text-lg mb-2 text-center">Mi Cámara</h2>
                 <video id="cameraVideo" autoplay playsinline class="w-full h-auto rounded-lg"></video>
-                <button id="toggleCamera" class="bg-blue-500 text-white px-4 py-2 rounded mt-2 hover:bg-blue-600">
-                    Activar Cámara
-                </button>
+                <button id="toggleCamera" class="bg-blue-500 text-white px-4 py-2 rounded mt-2 w-full hover:bg-blue-600">Activar Cámara</button>
             </div>
 
-            <!-- Contenedor de la pantalla compartida (más grande) -->
-            <div id="screenContainer" class="flex flex-col items-center w-3/4 bg-gray-300 rounded-lg p-2">
-                <h2 class="font-semibold text-lg mb-2">Pantalla Compartida</h2>
+            <!-- Pantalla compartida -->
+            <div class="w-full sm:w-3/4 bg-gray-300 rounded-lg p-2">
+                <h2 class="font-semibold text-lg mb-2 text-center">Pantalla Compartida</h2>
                 <video id="screenVideo" autoplay playsinline class="w-full h-auto rounded-lg"></video>
-                <button id="startShare" class="bg-blue-500 text-white px-4 py-2 rounded mt-2 hover:bg-blue-600">
-                    Compartir Pantalla
-                </button>
-                <button id="stopShare" class="bg-red-500 text-white px-4 py-2 rounded mt-2 hover:bg-red-600 hidden">
-                    Detener Pantalla
-                </button>
+                <button id="startShare" class="bg-blue-500 text-white px-4 py-2 rounded mt-2 w-full hover:bg-blue-600">Compartir Pantalla</button>
+                <button id="stopShare" class="bg-red-500 text-white px-4 py-2 rounded mt-2 w-full hover:bg-red-600 hidden">Detener Pantalla</button>
             </div>
         </div>
 
-        <!-- Botón de Desplegar Opciones -->
-        <div class="w-full flex justify-between space-x-4">
-            <button id="toggleOptionsButton" class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600">
-                Desplegar Opciones
-            </button>
+        <!-- Sección de opciones -->
+        <div class="p-4 flex flex-wrap space-x-4 justify-between">
+            <button id="toggleOptionsButton" class="bg-gray-500 text-white px-4 py-2 rounded w-full sm:w-auto hover:bg-gray-600">Desplegar Opciones</button>
         </div>
 
-        <!-- Contenedor de los botones ocultos -->
-        <div id="optionsContainer" class="w-full flex justify-between space-x-4 mt-4 hidden">
+        <!-- Contenedor de opciones (escondido inicialmente) -->
+        <div id="optionsContainer" class="w-full sm:w-auto p-4 hidden">
             <!-- Botón para crear nueva sala -->
-            <button id="createRoom" class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600">
-                Crear Sala
-            </button>
+            <button id="createRoom" class="bg-green-500 text-white px-4 py-2 rounded w-full sm:w-auto hover:bg-green-600 mb-2">Crear Sala</button>
 
             <!-- Botón para cargar un documento -->
-            <label for="uploadDocument" class="bg-yellow-500 text-white px-4 py-2 rounded cursor-pointer hover:bg-yellow-600">
-                Cargar Documento
+            <label for="uploadDocument" class="bg-yellow-500 text-white px-4 py-2 rounded w-full sm:w-auto cursor-pointer hover:bg-yellow-600 mb-2">Cargar Documento
                 <input type="file" id="uploadDocument" class="hidden">
             </label>
 
             <!-- Botón para exportar documento -->
-            <button id="exportDocument" class="bg-indigo-500 text-white px-4 py-2 rounded hover:bg-indigo-600">
-                Exportar Documento
-            </button>
+            <button id="exportDocument" class="bg-indigo-500 text-white px-4 py-2 rounded w-full sm:w-auto hover:bg-indigo-600 mb-2">Exportar Documento</button>
 
             <!-- Botón para editar contenido -->
-            <button id="editButton" class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600">
-                Editar
-            </button>
+            <button id="editButton" class="bg-red-500 text-white px-4 py-2 rounded w-full sm:w-auto hover:bg-red-600 mb-2">Editar</button>
         </div>
 
         <!-- Sección de comentarios -->
-        <div id="commentSection" class="w-full mt-4 p-4 bg-gray-100 rounded-lg">
+        <div id="commentSection" class="w-full p-4 bg-gray-100 rounded-lg mt-4">
             <h3 class="font-semibold text-lg mb-2">Agregar Comentario</h3>
-            <textarea id="commentInput" class="w-full p-2 mb-2 border border-gray-300 rounded-lg" rows="4" placeholder="Escribe tu comentario aquí..."></textarea>
-            <button id="commentButton" class="bg-purple-500 text-white px-4 py-2 rounded hover:bg-purple-600">
-                Comentar
-            </button>
+            <textarea id="commentInput" class="w-full p-2 mb-2 border border-gray-300 rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-blue-500" rows="4" placeholder="Escribe tu comentario aquí..."></textarea>
+            <button id="commentButton" class="bg-purple-500 text-white px-4 py-2 rounded hover:bg-purple-600">Comentar</button>
+
+            <!-- Listado de comentarios -->
             <div id="commentsList" class="mt-4">
                 <!-- Los comentarios se agregarán aquí -->
             </div>
@@ -82,6 +81,8 @@
     </div>
 
     <script>
+        feather.replace();
+
         const socket = io('http://localhost:3001');
         const cameraVideo = document.getElementById('cameraVideo');
         const screenVideo = document.getElementById('screenVideo');
@@ -185,36 +186,48 @@
 
         // Crear nueva sala
         function createRoom() {
-            const room = prompt("Ingresa el nombre de la sala:");
+            const room = prompt("Ingresa el nombre de la nueva sala:");
             if (room) {
                 roomName = room;
-                console.log("Sala creada:", room);
+                console.log("Sala creada:", roomName);
             }
         }
 
-        // Escuchar eventos de comentarios en tiempo real
-        socket.on('update_comments', (comment) => {
-            const commentElement = document.createElement('div');
-            commentElement.classList.add('bg-blue-100', 'p-2', 'mb-2', 'rounded-lg');
-            commentElement.textContent = comment;
-            commentsList.appendChild(commentElement);
-        });
-
-        // Desplegar/Ocultar opciones
+        // Mostrar/ocultar opciones
         toggleOptionsButton.addEventListener('click', () => {
             optionsContainer.classList.toggle('hidden');
         });
 
-        // Event listeners
-        toggleCameraButton.addEventListener('click', toggleCamera);
-        startShareButton.addEventListener('click', startScreenShare);
-        stopShareButton.addEventListener('click', stopScreenShare);
+        // Agregar evento de carga de archivo
         uploadDocumentButton.addEventListener('change', handleFileUpload);
-        exportDocumentButton.addEventListener('click', exportDocument);
-        editButton.addEventListener('click', editContent);
-        createRoomButton.addEventListener('click', createRoom);
-        commentButton.addEventListener('click', addComment);
-    </script>
 
+        // Evento de agregar comentario
+        commentButton.addEventListener('click', addComment);
+
+        // Iniciar compartición de pantalla
+        startShareButton.addEventListener('click', startScreenShare);
+
+        // Detener compartición de pantalla
+        stopShareButton.addEventListener('click', stopScreenShare);
+
+        // Toggle cámara
+        toggleCameraButton.addEventListener('click', toggleCamera);
+
+        // Exportar documento
+        exportDocumentButton.addEventListener('click', exportDocument);
+
+        // Editar contenido
+        editButton.addEventListener('click', editContent);
+
+        // Crear sala
+        createRoomButton.addEventListener('click', createRoom);
+
+        // Manejo de los comentarios
+        socket.on('new_comment', (comment) => {
+            const commentDiv = document.createElement('div');
+            commentDiv.textContent = comment;
+            commentsList.appendChild(commentDiv);
+        });
+    </script>
 </body>
 </html>
