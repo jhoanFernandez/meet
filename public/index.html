@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Video Call with Screen Sharing</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="/socket.io/socket.io.js"></script>
 </head>
 <body class="bg-gray-100 flex items-center justify-center min-h-screen">
 
@@ -35,8 +36,15 @@
             </div>
         </div>
 
-        <!-- Contenedor de botones debajo de la conferencia -->
+        <!-- Botón de Desplegar Opciones -->
         <div class="w-full flex justify-between space-x-4">
+            <button id="toggleOptionsButton" class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600">
+                Desplegar Opciones
+            </button>
+        </div>
+
+        <!-- Contenedor de los botones ocultos -->
+        <div id="optionsContainer" class="w-full flex justify-between space-x-4 mt-4 hidden">
             <!-- Botón para crear nueva sala -->
             <button id="createRoom" class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600">
                 Crear Sala
@@ -74,6 +82,7 @@
     </div>
 
     <script>
+        const socket = io('http://localhost:3001');
         const cameraVideo = document.getElementById('cameraVideo');
         const screenVideo = document.getElementById('screenVideo');
         const toggleCameraButton = document.getElementById('toggleCamera');
@@ -86,10 +95,13 @@
         const commentButton = document.getElementById('commentButton');
         const commentInput = document.getElementById('commentInput');
         const commentsList = document.getElementById('commentsList');
+        const optionsContainer = document.getElementById('optionsContainer');
+        const toggleOptionsButton = document.getElementById('toggleOptionsButton');
 
         let mediaStream = null;
         let cameraStream = null;
         let screenStream = null;
+        let roomName = 'room-1'; // Nombre de la sala (puedes cambiarlo dinámicamente)
 
         // Función para activar/desactivar la cámara
         async function toggleCamera() {
@@ -141,10 +153,7 @@
         function addComment() {
             const commentText = commentInput.value.trim();
             if (commentText) {
-                const commentElement = document.createElement('div');
-                commentElement.classList.add('bg-blue-100', 'p-2', 'mb-2', 'rounded-lg');
-                commentElement.textContent = commentText;
-                commentsList.appendChild(commentElement);
+                socket.emit('new_comment', roomName, commentText);
                 commentInput.value = ''; // Limpiar el campo de comentario
             } else {
                 alert("Por favor, ingresa un comentario.");
@@ -168,23 +177,35 @@
 
         // Función para editar contenido
         function editContent() {
-            const editedContent = prompt("Edite el contenido:");
+            const editedContent = prompt("Editar el contenido:", "Nuevo contenido");
             if (editedContent) {
                 console.log("Contenido editado:", editedContent);
-                // Aquí puedes agregar el código para guardar el contenido editado.
             }
         }
 
-        // Función para crear una nueva sala
+        // Crear nueva sala
         function createRoom() {
-            const roomName = prompt("Ingrese el nombre de la nueva sala:");
-            if (roomName) {
-                console.log("Sala creada:", roomName);
-                // Aquí puedes agregar el código para crear la sala en el servidor.
+            const room = prompt("Ingresa el nombre de la sala:");
+            if (room) {
+                roomName = room;
+                console.log("Sala creada:", room);
             }
         }
 
-        // Asignación de eventos a los botones
+        // Escuchar eventos de comentarios en tiempo real
+        socket.on('update_comments', (comment) => {
+            const commentElement = document.createElement('div');
+            commentElement.classList.add('bg-blue-100', 'p-2', 'mb-2', 'rounded-lg');
+            commentElement.textContent = comment;
+            commentsList.appendChild(commentElement);
+        });
+
+        // Desplegar/Ocultar opciones
+        toggleOptionsButton.addEventListener('click', () => {
+            optionsContainer.classList.toggle('hidden');
+        });
+
+        // Event listeners
         toggleCameraButton.addEventListener('click', toggleCamera);
         startShareButton.addEventListener('click', startScreenShare);
         stopShareButton.addEventListener('click', stopScreenShare);
@@ -193,7 +214,6 @@
         editButton.addEventListener('click', editContent);
         createRoomButton.addEventListener('click', createRoom);
         commentButton.addEventListener('click', addComment);
-
     </script>
 
 </body>

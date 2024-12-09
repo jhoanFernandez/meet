@@ -25,14 +25,14 @@ app.post('/upload', upload.single('file'), (req, res) => {
 app.get('/download/:filename', (req, res) => {
     const filePath = path.join(__dirname, 'uploads', req.params.filename);
     if (fs.existsSync(filePath)) {
-        res.download(filePath);  // Inicia la descarga
+        res.download(filePath); // Inicia la descarga
     } else {
         res.status(404).send('Archivo no encontrado');
     }
 });
 
 // Función para crear nuevas salas
-let rooms = {};  // Objeto para manejar las salas y los usuarios en cada sala
+let rooms = {}; // Objeto para manejar las salas y los usuarios en cada sala
 
 // Ruta para crear una nueva sala
 app.post('/create-room', (req, res) => {
@@ -45,37 +45,53 @@ app.post('/create-room', (req, res) => {
 io.on('connection', (socket) => {
     console.log('Un usuario se conectó');
 
-    // Función para unirse a una sala
-    socket.on('join_room', (roomName) => {
+    // Función para unirse a una sala con un rol
+    socket.on('join_room', (roomName, role = 'viewer') => {
+        if (!rooms[roomName]) {
+            rooms[roomName] = [];
+        }
+
+        rooms[roomName].push({ id: socket.id, role });
         socket.join(roomName);
-        rooms[roomName].push(socket.id);
-        console.log(`Usuario ${socket.id} se unió a la sala: ${roomName}`);
+
+        console.log(`Usuario ${socket.id} se unió a la sala ${roomName} como ${role}`);
     });
 
     // Función para enviar un comentario
     socket.on('new_comment', (roomName, comment) => {
-        io.to(roomName).emit('update_comments', comment);  // Emitir el comentario a todos los usuarios de la sala
+        const user = rooms[roomName]?.find(user => user.id === socket.id);
+        if (user && (user.role === 'viewer' || user.role === 'editor')) {
+            io.to(roomName).emit('update_comments', { userId: socket.id, comment });
+        } else {
+            socket.emit('error', 'No tienes permiso para comentar');
+        }
     });
 
     // Función para editar el documento en la sala
     socket.on('edit_document', (roomName, newText) => {
-        io.to(roomName).emit('document_update', newText);  // Actualizar el documento compartido
+        const user = rooms[roomName]?.find(user => user.id === socket.id);
+        if (user && user.role === 'editor') {
+            io.to(roomName).emit('document_update', { editorId: socket.id, text: newText });
+        } else {
+            socket.emit('error', 'No tienes permiso para editar el documento');
+        }
     });
 
     // Función para crear un nuevo documento
     socket.on('create_document', (roomName, documentName) => {
-        io.to(roomName).emit('document_created', documentName);  // Crear un nuevo documento en la sala
+        const user = rooms[roomName]?.find(user => user.id === socket.id);
+        if (user && user.role === 'editor') {
+            io.to(roomName).emit('document_created', { documentName, creatorId: socket.id });
+        } else {
+            socket.emit('error', 'No tienes permiso para crear un documento');
+        }
     });
 
     // Cuando un usuario se desconecta
     socket.on('disconnect', () => {
         console.log('Usuario desconectado');
         for (const roomName in rooms) {
-            const room = rooms[roomName];
-            const index = room.indexOf(socket.id);
-            if (index !== -1) {
-                room.splice(index, 1);  // Eliminar al usuario de la sala
-            }
+            rooms[roomName] = rooms[roomName].filter(user => user.id !== socket.id);
         }
     });
 });
