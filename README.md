@@ -42,10 +42,10 @@ Ejecuta la aplicación:
 bash
 Copiar código
 npm start
-Esto iniciará un servidor local en el puerto 3000 o el puerto que configures en tu aplicación.
+Esto iniciará un servidor local en el puerto 3001 o el puerto que configures en tu aplicación.
 
 Uso
-Abre tu navegador y accede a http://localhost:3000.
+Abre tu navegador y accede a http://localhost:3001.
 Puedes crear o unirte a una sala de videollamada.
 Haz clic en los botones para encender o apagar tu cámara, y para compartir tu pantalla.
 Los participantes pueden unirse a la sala utilizando un enlace generado.
