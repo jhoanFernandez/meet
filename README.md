@@ -24,7 +24,7 @@ Instalación
 Clona el repositorio:
 
 
-git clone https://github.com/tu-usuario/meet.git
+git clone https://github.com/jhoanFernandez/meet.git
 Accede al directorio del proyecto:
 
 
