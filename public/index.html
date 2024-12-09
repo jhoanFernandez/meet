@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Video Call with Screen Sharing</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 flex items-center justify-center min-h-screen">
+
+    <!-- Contenedor principal -->
+    <div class="flex flex-col w-full max-w-4xl p-4 bg-white rounded-lg shadow-md space-y-4">
+
+        <!-- Contenedor de la cámara y la pantalla compartida -->
+        <div class="flex w-full space-x-4">
+            <!-- Contenedor de la cámara (más pequeño) -->
+            <div id="cameraContainer" class="flex flex-col items-center w-1/4 bg-gray-300 rounded-lg p-2">
+                <h2 class="font-semibold text-lg mb-2">Mi Cámara</h2>
+                <video id="cameraVideo" autoplay playsinline class="w-full h-auto rounded-lg"></video>
+                <button id="toggleCamera" class="bg-blue-500 text-white px-4 py-2 rounded mt-2 hover:bg-blue-600">
+                    Activar Cámara
+                </button>
+            </div>
+
+            <!-- Contenedor de la pantalla compartida (más grande) -->
+            <div id="screenContainer" class="flex flex-col items-center w-3/4 bg-gray-300 rounded-lg p-2">
+                <h2 class="font-semibold text-lg mb-2">Pantalla Compartida</h2>
+                <video id="screenVideo" autoplay playsinline class="w-full h-auto rounded-lg"></video>
+                <button id="startShare" class="bg-blue-500 text-white px-4 py-2 rounded mt-2 hover:bg-blue-600">
+                    Compartir Pantalla
+                </button>
+                <button id="stopShare" class="bg-red-500 text-white px-4 py-2 rounded mt-2 hover:bg-red-600 hidden">
+                    Detener Pantalla
+                </button>
+            </div>
+        </div>
+
+        <!-- Contenedor de botones debajo de la conferencia -->
+        <div class="w-full flex justify-between space-x-4">
+            <!-- Botón para crear nueva sala -->
+            <button id="createRoom" class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600">
+                Crear Sala
+            </button>
+
+            <!-- Botón para cargar un documento -->
+            <label for="uploadDocument" class="bg-yellow-500 text-white px-4 py-2 rounded cursor-pointer hover:bg-yellow-600">
+                Cargar Documento
+                <input type="file" id="uploadDocument" class="hidden">
+            </label>
+
+            <!-- Botón para exportar documento -->
+            <button id="exportDocument" class="bg-indigo-500 text-white px-4 py-2 rounded hover:bg-indigo-600">
+                Exportar Documento
+            </button>
+
+            <!-- Botón para agregar comentarios -->
+            <button id="commentButton" class="bg-purple-500 text-white px-4 py-2 rounded hover:bg-purple-600">
+                Comentar
+            </button>
+
+            <!-- Botón para editar contenido -->
+            <button id="editButton" class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600">
+                Editar
+            </button>
+        </div>
+
+    </div>
+
+    <script>
+        const cameraVideo = document.getElementById('cameraVideo');
+        const screenVideo = document.getElementById('screenVideo');
+        const toggleCameraButton = document.getElementById('toggleCamera');
+        const startShareButton = document.getElementById('startShare');
+        const stopShareButton = document.getElementById('stopShare');
+        const uploadDocumentButton = document.getElementById('uploadDocument');
+        const exportDocumentButton = document.getElementById('exportDocument');
+        const commentButton = document.getElementById('commentButton');
+        const editButton = document.getElementById('editButton');
+        const createRoomButton = document.getElementById('createRoom');
+        
+        let mediaStream = null;
+        let cameraStream = null;
+        let screenStream = null;
+
+        // Función para activar/desactivar la cámara
+        async function toggleCamera() {
+            if (!cameraStream) {
+                try {
+                    cameraStream = await navigator.mediaDevices.getUserMedia({ video: true });
+                    cameraVideo.srcObject = cameraStream;
+                    toggleCameraButton.textContent = 'Desactivar Cámara';
+                } catch (err) {
+                    console.error('Error al acceder a la cámara: ', err);
+                }
+            } else {
+                const tracks = cameraStream.getTracks();
+                tracks.forEach(track => track.stop());
+                cameraStream = null;
+                cameraVideo.srcObject = null;
+                toggleCameraButton.textContent = 'Activar Cámara';
+            }
+        }
+
+        // Función para iniciar la pantalla compartida
+        async function startScreenShare() {
+            try {
+                screenStream = await navigator.mediaDevices.getDisplayMedia({ video: true });
+                screenVideo.srcObject = screenStream;
+                startShareButton.classList.add('hidden');
+                stopShareButton.classList.remove('hidden');
+
+                // Detectar cuando se detiene la compartición de pantalla
+                screenStream.getVideoTracks()[0].addEventListener('ended', () => {
+                    stopScreenShare();
+                });
+            } catch (error) {
+                console.error("Error al compartir la pantalla:", error);
+            }
+        }
+
+        // Función para detener la pantalla compartida
+        function stopScreenShare() {
+            if (screenStream) {
+                screenStream.getTracks().forEach(track => track.stop());
+                screenVideo.srcObject = null;
+                startShareButton.classList.remove('hidden');
+                stopShareButton.classList.add('hidden');
+            }
+        }
+
+        // Función para cargar un documento
+        function handleFileUpload(event) {
+            const file = event.target.files[0];
+            if (file) {
+                console.log('Documento cargado:', file.name);
+                // Aquí puedes agregar el código para procesar el archivo, por ejemplo, cargarlo al servidor.
+            }
+        }
+
+        // Función para exportar documento
+        function exportDocument() {
+            console.log("Documento exportado.");
+            // Aquí puedes agregar el código para exportar el documento.
+        }
+
+        // Función para agregar comentarios
+        function addComment() {
+            const comment = prompt("Ingrese su comentario:");
+            if (comment) {
+                console.log("Comentario agregado:", comment);
+                // Aquí puedes agregar el código para guardar el comentario en el servidor o base de datos.
+            }
+        }
+
+        // Función para editar contenido
+        function editContent() {
+            const editedContent = prompt("Edite el contenido:");
+            if (editedContent) {
+                console.log("Contenido editado:", editedContent);
+                // Aquí puedes agregar el código para guardar el contenido editado.
+            }
+        }
+
+        // Función para crear una nueva sala
+        function createRoom() {
+            const roomName = prompt("Ingrese el nombre de la nueva sala:");
+            if (roomName) {
+                console.log("Sala creada:", roomName);
+                // Aquí puedes agregar el código para crear la sala en el servidor.
+            }
+        }
+
+        // Asignación de eventos a los botones
+        toggleCameraButton.addEventListener('click', toggleCamera);
+        startShareButton.addEventListener('click', startScreenShare);
+        stopShareButton.addEventListener('click', stopScreenShare);
+        uploadDocumentButton.addEventListener('change', handleFileUpload);
+        exportDocumentButton.addEventListener('click', exportDocument);
+        commentButton.addEventListener('click', addComment);
+        editButton.addEventListener('click', editContent);
+        createRoomButton.addEventListener('click', createRoom);
+
+    </script>
+
+</body>
+</html>
