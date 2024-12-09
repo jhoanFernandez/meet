@@ -53,15 +53,22 @@
                 Exportar Documento
             </button>
 
-            <!-- Botón para agregar comentarios -->
-            <button id="commentButton" class="bg-purple-500 text-white px-4 py-2 rounded hover:bg-purple-600">
-                Comentar
-            </button>
-
             <!-- Botón para editar contenido -->
             <button id="editButton" class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600">
                 Editar
             </button>
+        </div>
+
+        <!-- Sección de comentarios -->
+        <div id="commentSection" class="w-full mt-4 p-4 bg-gray-100 rounded-lg">
+            <h3 class="font-semibold text-lg mb-2">Agregar Comentario</h3>
+            <textarea id="commentInput" class="w-full p-2 mb-2 border border-gray-300 rounded-lg" rows="4" placeholder="Escribe tu comentario aquí..."></textarea>
+            <button id="commentButton" class="bg-purple-500 text-white px-4 py-2 rounded hover:bg-purple-600">
+                Comentar
+            </button>
+            <div id="commentsList" class="mt-4">
+                <!-- Los comentarios se agregarán aquí -->
+            </div>
         </div>
 
     </div>
@@ -74,10 +81,12 @@
         const stopShareButton = document.getElementById('stopShare');
         const uploadDocumentButton = document.getElementById('uploadDocument');
         const exportDocumentButton = document.getElementById('exportDocument');
-        const commentButton = document.getElementById('commentButton');
         const editButton = document.getElementById('editButton');
         const createRoomButton = document.getElementById('createRoom');
-        
+        const commentButton = document.getElementById('commentButton');
+        const commentInput = document.getElementById('commentInput');
+        const commentsList = document.getElementById('commentsList');
+
         let mediaStream = null;
         let cameraStream = null;
         let screenStream = null;
@@ -128,6 +137,20 @@
             }
         }
 
+        // Función para agregar comentario
+        function addComment() {
+            const commentText = commentInput.value.trim();
+            if (commentText) {
+                const commentElement = document.createElement('div');
+                commentElement.classList.add('bg-blue-100', 'p-2', 'mb-2', 'rounded-lg');
+                commentElement.textContent = commentText;
+                commentsList.appendChild(commentElement);
+                commentInput.value = ''; // Limpiar el campo de comentario
+            } else {
+                alert("Por favor, ingresa un comentario.");
+            }
+        }
+
         // Función para cargar un documento
         function handleFileUpload(event) {
             const file = event.target.files[0];
@@ -141,15 +164,6 @@
         function exportDocument() {
             console.log("Documento exportado.");
             // Aquí puedes agregar el código para exportar el documento.
-        }
-
-        // Función para agregar comentarios
-        function addComment() {
-            const comment = prompt("Ingrese su comentario:");
-            if (comment) {
-                console.log("Comentario agregado:", comment);
-                // Aquí puedes agregar el código para guardar el comentario en el servidor o base de datos.
-            }
         }
 
         // Función para editar contenido
@@ -176,9 +190,9 @@
         stopShareButton.addEventListener('click', stopScreenShare);
         uploadDocumentButton.addEventListener('change', handleFileUpload);
         exportDocumentButton.addEventListener('click', exportDocument);
-        commentButton.addEventListener('click', addComment);
         editButton.addEventListener('click', editContent);
         createRoomButton.addEventListener('click', createRoom);
+        commentButton.addEventListener('click', addComment);
 
     </script>
 
